@@ -1,0 +1,104 @@
+# ============================================================
+# .gitignore cho .NET 10 / ASP.NET Core
+# Project: University Centralized Document Management System
+# Team: Nhóm 7
+# ============================================================
+
+# ----------------------
+# Visual Studio / IDE
+# ----------------------
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+.idea/
+*.DotSettings.user
+
+# ----------------------
+# Build Output
+# ----------------------
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+out/
+
+# ----------------------
+# NuGet
+# ----------------------
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+!**/packages/repositories.config
+*.nuget.cache
+nuget.config.local
+
+# ----------------------
+# .NET
+# ----------------------
+project.lock.json
+project.fragment.lock.json
+artifacts/
+**/Properties/launchSettings.json
+
+# ----------------------
+# ASP.NET Core / appsettings bí mật
+# ----------------------
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+secrets.json
+*.pfx
+*.p12
+
+# ----------------------
+# Entity Framework
+# ----------------------
+# (migrations vẫn được commit - chỉ ignore temp files)
+
+# ----------------------
+# User-specific
+# ----------------------
+*.rsuser
+.envrc
+.env
+.env.*
+!.env.example
+
+# ----------------------
+# OS
+# ----------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ----------------------
+# Storage / Upload folders (actual files, not code)
+# ----------------------
+*_Storage/
+uploads/
+wwwroot/uploads/
+
+# ----------------------
+# Test results
+# ----------------------
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage*/

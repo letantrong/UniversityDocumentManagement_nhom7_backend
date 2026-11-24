@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="11.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="11.0.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Common\Behaviors\" />
+    <Folder Include="Common\Models\" />
+    <Folder Include="Features\Approvals\" />
+    <Folder Include="Features\AuditLogs\" />
+    <Folder Include="Features\Auth\" />
+    <Folder Include="Features\Categories\" />
+    <Folder Include="Features\Departments\" />
+    <Folder Include="Features\Documents\" />
+    <Folder Include="Features\Folders\" />
+    <Folder Include="Features\Intake\" />
+    <Folder Include="Features\Notifications\" />
+    <Folder Include="Features\Permissions\" />
+    <Folder Include="Features\Reports\" />
+    <Folder Include="Features\Roles\" />
+    <Folder Include="Features\Stations\" />
+    <Folder Include="Features\Users\" />
+  </ItemGroup>
+
+</Project>
