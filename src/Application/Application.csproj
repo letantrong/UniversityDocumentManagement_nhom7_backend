@@ -24,16 +24,12 @@
     <Folder Include="Features\AuditLogs\" />
     <Folder Include="Features\Auth\" />
     <Folder Include="Features\Categories\" />
-    <Folder Include="Features\Departments\" />
     <Folder Include="Features\Documents\" />
     <Folder Include="Features\Folders\" />
     <Folder Include="Features\Intake\" />
     <Folder Include="Features\Notifications\" />
     <Folder Include="Features\Permissions\" />
     <Folder Include="Features\Reports\" />
-    <Folder Include="Features\Roles\" />
-    <Folder Include="Features\Stations\" />
-    <Folder Include="Features\Users\" />
   </ItemGroup>
 
 </Project>
