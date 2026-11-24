@@ -19,7 +19,7 @@ Toàn bộ quy trình phát triển tính năng mới, phân công công việc 
 ---
 
 ## 🛠️ Hướng dẫn chạy nhanh
-1. Mở file `UniversityDocumentManagement.slnx` bằng Visual Studio 2022 trở lên.
+1. Mở file `UniversityDocumentManagement.slnx` bằng Visual Studio 2026.
 2. Kiểm tra chuỗi kết nối SQL Server trong `src/WebApi/appsettings.json`.
 3. Bấm **F5** để khởi chạy ứng dụng. Database và dữ liệu mẫu (Seed Data) sẽ tự động được khởi tạo.
 4. Truy cập tài liệu và test API tại: `https://localhost:7028/scalar/v1`.
