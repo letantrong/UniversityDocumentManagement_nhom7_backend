@@ -16,16 +16,6 @@ public record DashboardStatisticsDto(
     int TotalUsers,
     int TotalCategories);
 
-public record DocumentSummaryReportDto(
-    int TotalDocuments,
-    int PendingApprovalDocuments,
-    int ApprovedDocuments,
-    int RejectedDocuments);
-
-public record IntakeTimelineItemDto(
-    DateTime Date,
-    int Count);
-
 public record GetDashboardStatisticsQuery : IRequest<Result<DashboardStatisticsDto>>;
 
 public class GetDashboardStatisticsQueryHandler : IRequestHandler<GetDashboardStatisticsQuery, Result<DashboardStatisticsDto>>
@@ -63,6 +53,12 @@ public class GetDashboardStatisticsQueryHandler : IRequestHandler<GetDashboardSt
         return Result<DashboardStatisticsDto>.Success(stats);
     }
 }
+public record DocumentSummaryReportDto(
+    DateTime? FromDate,
+    DateTime? ToDate,
+    int TotalDocuments,
+    int ApprovedDocuments,
+    int PendingApprovalDocuments);
 
 public record GetDocumentSummaryReportQuery(DateTime? FromDate, DateTime? ToDate)
     : IRequest<Result<DocumentSummaryReportDto>>;
@@ -89,29 +85,29 @@ public class GetDocumentSummaryReportQueryHandler
         if (request.ToDate.HasValue)
             query = query.Where(d => d.CreatedAt <= request.ToDate.Value);
 
-        var totalDocuments = await query.CountAsync(cancellationToken);
-        var pendingApprovalDocuments = await query.CountAsync(
-            d => d.Status == DocumentStatus.PendingApproval, cancellationToken);
-        var approvedDocuments = await query.CountAsync(
-            d => d.Status == DocumentStatus.Approved, cancellationToken);
-        var rejectedDocuments = await query.CountAsync(
-            d => d.Status == DocumentStatus.Rejected, cancellationToken);
+        var total = await query.CountAsync(cancellationToken);
+        var approved = await query.CountAsync(d => d.Status == DocumentStatus.Approved, cancellationToken);
+        var pending = await query.CountAsync(d => d.Status == DocumentStatus.PendingApproval, cancellationToken);
 
-        var summary = new DocumentSummaryReportDto(
-            totalDocuments,
-            pendingApprovalDocuments,
-            approvedDocuments,
-            rejectedDocuments);
-
-        return Result<DocumentSummaryReportDto>.Success(summary);
+        return Result<DocumentSummaryReportDto>.Success(
+            new DocumentSummaryReportDto(request.FromDate, request.ToDate, total, approved, pending));
     }
 }
 
+public record IntakeTimelineItemDto(
+    DateTime Date,
+    int Count);
+
+public record IntakeTimelineReportDto(
+    DateTime? FromDate,
+    DateTime? ToDate,
+    IReadOnlyList<IntakeTimelineItemDto> Items);
+
 public record GetIntakeTimelineReportQuery(DateTime? FromDate, DateTime? ToDate)
-    : IRequest<Result<List<IntakeTimelineItemDto>>>;
+    : IRequest<Result<IntakeTimelineReportDto>>;
 
 public class GetIntakeTimelineReportQueryHandler
-    : IRequestHandler<GetIntakeTimelineReportQuery, Result<List<IntakeTimelineItemDto>>>
+    : IRequestHandler<GetIntakeTimelineReportQuery, Result<IntakeTimelineReportDto>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -120,7 +116,7 @@ public class GetIntakeTimelineReportQueryHandler
         _context = context;
     }
 
-    public async Task<Result<List<IntakeTimelineItemDto>>> Handle(
+    public async Task<Result<IntakeTimelineReportDto>> Handle(
         GetIntakeTimelineReportQuery request,
         CancellationToken cancellationToken)
     {
@@ -132,12 +128,13 @@ public class GetIntakeTimelineReportQueryHandler
         if (request.ToDate.HasValue)
             query = query.Where(i => i.CreatedAt <= request.ToDate.Value);
 
-        var timeline = await query
+        var items = await query
             .GroupBy(i => i.CreatedAt.Date)
+            .OrderBy(g => g.Key)
             .Select(g => new IntakeTimelineItemDto(g.Key, g.Count()))
-            .OrderBy(x => x.Date)
             .ToListAsync(cancellationToken);
 
-        return Result<List<IntakeTimelineItemDto>>.Success(timeline);
+        return Result<IntakeTimelineReportDto>.Success(
+            new IntakeTimelineReportDto(request.FromDate, request.ToDate, items));
     }
 }
