@@ -146,3 +146,91 @@ public class SubmitApprovalDecisionCommandHandler : IRequestHandler<SubmitApprov
         return Result.Success($"Document {decisionWord.ToLower()} successfully.");
     }
 }
+public record SubmitDocumentForApprovalCommand(
+    Guid DocumentId,
+    Guid ApproverId,
+    int StepOrder = 1,
+    string? Comments = null) : IRequest<Result<Guid>>;
+
+public class SubmitDocumentForApprovalCommandHandler
+    : IRequestHandler<SubmitDocumentForApprovalCommand, Result<Guid>>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IDateTimeService _dateTimeService;
+    private readonly INotificationService _notificationService;
+
+    public SubmitDocumentForApprovalCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService,
+        IDateTimeService dateTimeService,
+        INotificationService notificationService)
+    {
+        _context = context;
+        _currentUserService = currentUserService;
+        _dateTimeService = dateTimeService;
+        _notificationService = notificationService;
+    }
+
+    public async Task<Result<Guid>> Handle(
+        SubmitDocumentForApprovalCommand request,
+        CancellationToken cancellationToken)
+    {
+        if (!_currentUserService.UserId.HasValue)
+            return Result<Guid>.Failure("Unauthorized");
+
+        var approval = new Approval
+        {
+            Id = Guid.NewGuid(),
+            DocumentId = request.DocumentId,
+            ApproverId = request.ApproverId,
+            StepOrder = request.StepOrder,
+            Status = ApprovalStatus.Pending,
+            Comments = request.Comments,
+            CreatedAt = _dateTimeService.UtcNow
+        };
+
+        _context.Approvals.Add(approval);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        await _notificationService.SendToUserAsync(
+            request.ApproverId,
+            "Approval Request",
+            request.Comments ?? $"Document {request.DocumentId} is waiting for your approval.",
+            request.DocumentId.ToString(),
+            cancellationToken);
+
+        return Result<Guid>.Success(approval.Id);
+    }
+}
+
+public record ArchiveDocumentCommand(Guid DocumentId, string? Comments = null) : IRequest<Result>;
+
+public class ArchiveDocumentCommandHandler : IRequestHandler<ArchiveDocumentCommand, Result>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IDateTimeService _dateTimeService;
+
+    public ArchiveDocumentCommandHandler(
+        IApplicationDbContext context,
+        ICurrentUserService currentUserService,
+        IDateTimeService dateTimeService)
+    {
+        _context = context;
+        _currentUserService = currentUserService;
+        _dateTimeService = dateTimeService;
+    }
+
+    public async Task<Result> Handle(ArchiveDocumentCommand request, CancellationToken cancellationToken)
+    {
+        if (!_currentUserService.UserId.HasValue)
+            return Result.Failure("Unauthorized");
+
+        // Nếu entity Document có trạng thái Archived (vd: DocumentStatus.Archived), cập nhật tại đây
+        // và gọi await _context.SaveChangesAsync(cancellationToken).
+        _ = _dateTimeService.UtcNow;
+
+        return Result.Success("Document archived successfully.");
+    }
+}

@@ -94,3 +94,56 @@ public class MarkNotificationAsReadCommandHandler : IRequestHandler<MarkNotifica
         return Result.Success("Notification marked as read.");
     }
 }
+public record CreateNotificationCommand(
+    Guid UserId,
+    string Title,
+    string Message,
+    NotificationType Type = NotificationType.System,
+    string? ReferenceId = null) : IRequest<Result<Guid>>;
+
+public class CreateNotificationCommandHandler : IRequestHandler<CreateNotificationCommand, Result<Guid>>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly IDateTimeService _dateTimeService;
+    private readonly INotificationService _notificationService;
+
+    public CreateNotificationCommandHandler(
+        IApplicationDbContext context,
+        IDateTimeService dateTimeService,
+        INotificationService notificationService)
+    {
+        _context = context;
+        _dateTimeService = dateTimeService;
+        _notificationService = notificationService;
+    }
+
+    public async Task<Result<Guid>> Handle(CreateNotificationCommand request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Message))
+            return Result<Guid>.Failure("Title and message are required.");
+
+        var notification = new Domain.Entities.Notification
+        {
+            Id = Guid.NewGuid(),
+            UserId = request.UserId,
+            Title = request.Title.Trim(),
+            Message = request.Message.Trim(),
+            Type = request.Type,
+            ReferenceId = request.ReferenceId,
+            IsRead = false,
+            CreatedAt = _dateTimeService.UtcNow
+        };
+
+        _context.Notifications.Add(notification);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        await _notificationService.SendToUserAsync(
+            notification.UserId,
+            notification.Title,
+            notification.Message,
+            notification.ReferenceId,
+            cancellationToken);
+
+        return Result<Guid>.Success(notification.Id);
+    }
+}
